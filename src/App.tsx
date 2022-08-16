@@ -2,7 +2,9 @@ import { WalletAdapterNetwork, WalletNotConnectedError } from '@solana/wallet-ad
 import { ConnectionProvider, WalletProvider, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Button } from '@solana/wallet-adapter-react-ui/lib/types/Button';
-import { ethers } from "ethers"
+import { ethers } from "ethers";
+import {BncClient} from '@binance-chain/javascript-sdk';
+
 
 import '../src/css/bootstrap.css'
 import {
@@ -83,10 +85,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 
 const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
-    let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9");
-
-  
-    
+    let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
 
     // const { connection } = useConnection();
     const connection = new Connection(clusterApiUrl("devnet"))
@@ -147,7 +146,19 @@ const web3Handler = async () => {
     })
     
     //loadContracts(signer)
-  }
+}
+
+const connectBnb = ()=>{
+    const api = "https://testnet-dex.binance.org";
+    //const client = new BncClient(api);
+    /*client.initChain();
+
+    client.getBalance('address');
+    client.transfer('fromAddress', 'toAddress', 'amount','assest');
+*/
+
+    (window as any).binanceChain.request({method: 'bsc_accounts'})
+}
     return (
        
 
@@ -162,6 +173,7 @@ const web3Handler = async () => {
           <ul className="nav pull-right">
                       <li><button className="btn" onClick={web3Handler}>Metamask</button></li>
                       <li className="divider-vertical"></li>
+                      <li><button className="btn" onClick={connectBnb}>Bnb</button></li>
                       <li><WalletMultiButton /></li>
 
                     </ul>
