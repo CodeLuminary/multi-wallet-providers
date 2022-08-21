@@ -90,7 +90,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 
 const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
-    let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9");
+    let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
 
     // const { connection } = useConnection();
     const connection = new Connection(clusterApiUrl("devnet"))
@@ -153,73 +153,84 @@ const web3Handler = async () => {
     //loadContracts(signer)
   }
 
-const connectTrust = async () =>{
+  const connectTrust = async () =>{
 
-// Create a connector
-const connector = new WalletConnect({
-  bridge: "https://bridge.walletconnect.org", // Required
-  qrcodeModal: QRCodeModal,
-});
+    // Create a connector
+    const connector = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org", // Required
+      qrcodeModal: QRCodeModal,
+    });
 
-// Check if connection is already established
-if (!connector.connected) {
-  // create new session
-  connector.createSession();
-}
+    // Check if connection is already established
+    if (!connector.connected) {
+      // create new session
+      connector.createSession();
+    }
 
-// Subscribe to connection events
-connector.on("connect", (error, payload) => {
-  if (error) {
-    throw error;
+    // Subscribe to connection events
+    connector.on("connect", (error, payload) => {
+      if (error) {
+        throw error;
+      }
+
+      // Get provided accounts and chainId
+      const { accounts, chainId } = payload.params[0];
+    });
+
+    connector.on("session_update", (error, payload) => {
+    if (error) {
+      throw error;
+    }
+
+    // Get updated accounts and chainId
+    const { accounts, chainId } = payload.params[0];
+  });
+
+    connector.on("disconnect", (error, payload) => {
+      if (error) {
+        throw error;
+      }
+
+      // Delete connector
+    });
   }
 
-  // Get provided accounts and chainId
-  const { accounts, chainId } = payload.params[0];
-});
+    const connectBnb = ()=>{
+        const api = "https://testnet-dex.binance.org";
+        //const client = new BncClient(api);
+        /*client.initChain();
 
-connector.on("session_update", (error, payload) => {
-  if (error) {
-    throw error;
-  }
+        client.getBalance('address');
+        client.transfer('fromAddress', 'toAddress', 'amount','assest');
+    */
 
-  // Get updated accounts and chainId
-  const { accounts, chainId } = payload.params[0];
-});
-
-connector.on("disconnect", (error, payload) => {
-  if (error) {
-    throw error;
-  }
-
-  // Delete connector
-});
-}
-
+        (window as any).binanceChain.request({method: 'bsc_accounts'})
+    }
     return (
        
 
         <div className="App">
                 <div className="navbar">
         <div className="navbar-inner ">
-          <a id="title" className="brand" href="#">Brand</a>
+          <a id="title" className="brand" href="#">Multi-Wallet</a>
           <ul className="nav">
 
 
           </ul>
           <ul className="nav pull-right">
-                      <li><a href="#">White Paper</a></li>
+                      <li><button className="btn" onClick={web3Handler}>Metamask</button></li>
                       <li className="divider-vertical"></li>
                       <li><WalletMultiButton >
-                          <button >Get Wallet</button></WalletMultiButton></li>
+                          <button >Get Wallet</button></WalletMultiButton>
+                      </li>
 
                     </ul>
         </div>
       </div>
-<input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
+        <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
       <button className='btn' onClick={onClick}>Send Sol </button>
-     <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
-
+      <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
         </div>
     );
 };
