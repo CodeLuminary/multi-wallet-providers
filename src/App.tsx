@@ -2,7 +2,15 @@ import { WalletAdapterNetwork, WalletNotConnectedError } from '@solana/wallet-ad
 import { ConnectionProvider, WalletProvider, useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletModalProvider, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { Button } from '@solana/wallet-adapter-react-ui/lib/types/Button';
-import { ethers } from "ethers"
+import { ethers } from "ethers";
+
+import WalletConnect from "@walletconnect/client";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+
+import Web3 from "web3";
+import WalletConnectProvider from "@walletconnect/web3-provider";
+import Web3Modal from "web3modal";
+
 
 import '../src/css/bootstrap.css'
 import {
@@ -22,7 +30,6 @@ import { clusterApiUrl, Transaction, SystemProgram, Keypair, LAMPORTS_PER_SOL, P
 import React, { FC, ReactNode, useMemo, useCallback, useState } from 'react';
 
 import { actions, utils, programs, NodeWallet, Connection} from '@metaplex/js'; 
-
 
 
 require('./App.css');
@@ -85,9 +92,6 @@ const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
     let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9");
 
-  
-    
-
     // const { connection } = useConnection();
     const connection = new Connection(clusterApiUrl("devnet"))
     const { publicKey, sendTransaction } = useWallet();
@@ -148,6 +152,49 @@ const web3Handler = async () => {
     
     //loadContracts(signer)
   }
+
+const connectTrust = async () =>{
+
+// Create a connector
+const connector = new WalletConnect({
+  bridge: "https://bridge.walletconnect.org", // Required
+  qrcodeModal: QRCodeModal,
+});
+
+// Check if connection is already established
+if (!connector.connected) {
+  // create new session
+  connector.createSession();
+}
+
+// Subscribe to connection events
+connector.on("connect", (error, payload) => {
+  if (error) {
+    throw error;
+  }
+
+  // Get provided accounts and chainId
+  const { accounts, chainId } = payload.params[0];
+});
+
+connector.on("session_update", (error, payload) => {
+  if (error) {
+    throw error;
+  }
+
+  // Get updated accounts and chainId
+  const { accounts, chainId } = payload.params[0];
+});
+
+connector.on("disconnect", (error, payload) => {
+  if (error) {
+    throw error;
+  }
+
+  // Delete connector
+});
+}
+
     return (
        
 
@@ -162,7 +209,8 @@ const web3Handler = async () => {
           <ul className="nav pull-right">
                       <li><a href="#">White Paper</a></li>
                       <li className="divider-vertical"></li>
-                      <li><WalletMultiButton /></li>
+                      <li><WalletMultiButton >
+                          <button >Get Wallet</button></WalletMultiButton></li>
 
                     </ul>
         </div>
@@ -170,7 +218,7 @@ const web3Handler = async () => {
 <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
       <button className='btn' onClick={onClick}>Send Sol </button>
-     <button className="btn" onClick={web3Handler}>Connect to Metamask</button>
+     <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
 
         </div>
     );

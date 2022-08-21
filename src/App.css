@@ -11,3 +11,8 @@
   text-align: center !important;
   align-items: center !important;
 }
+.wallet-adapter-button{
+  background-color: transparent !important;
+  height: initial !important;
+  padding: 0px !important;
+}
