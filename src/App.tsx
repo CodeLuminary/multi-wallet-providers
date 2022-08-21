@@ -72,8 +72,6 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
         [network]
     );
 
-   
-
     return (
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} autoConnect>
@@ -86,6 +84,11 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
     let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
+    const [shouldshow, setShouldShow] = useState(true);
+    
+    //Initialize wallet number
+    //1 for metamask, 2 for sollet, 3 for Trust
+    const [walletNumber, setWalletNumber] = useState(1);
 
     // const { connection } = useConnection();
     const connection = new Connection(clusterApiUrl("devnet"))
@@ -114,39 +117,38 @@ const Content: FC = () => {
 
         await connection.confirmTransaction(signature, 'processed');
     }, [publicKey, sendTransaction, connection]);
-
     
-function setTheLamports(e: any)
-{
-    console.log(Number(e.target.value));
-    setLamports(Number(e.target.value));
-    lamports = e.target.value;
-    thelamports = lamports;
-}
-function setTheWallet(e: any){
-    setWallet(e.target.value)
-    theWallet = e.target.value;
-}
+    function setTheLamports(e: any)
+    {
+        console.log(Number(e.target.value));
+        setLamports(Number(e.target.value));
+        lamports = e.target.value;
+        thelamports = lamports;
+    }
+    function setTheWallet(e: any){
+        setWallet(e.target.value)
+        theWallet = e.target.value;
+    }
 
-const web3Handler = async () => {
-    const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
-    //setAccount(accounts[0])
-    // Get provider from Metamask
-    const provider = new ethers.providers.Web3Provider((window as any).ethereum)
-    // Set signer
-    const signer = provider.getSigner();
+    const connectMetamask = async () => {
+        const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
+        //setAccount(accounts[0])
+        // Get provider from Metamask
+        const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+        // Set signer
+        const signer = provider.getSigner();
 
-    (window as any).ethereum.on('chainChanged', (chainId: any) => {
-      window.location.reload();
-    })
+        (window as any).ethereum.on('chainChanged', (chainId: any) => {
+          window.location.reload();
+        })
 
-    (window as any).ethereum.on('accountsChanged', async function (accounts: []) {
-      //setAccount(accounts[0])
-      await web3Handler()
-    })
-    
-    //loadContracts(signer)
-  }
+        (window as any).ethereum.on('accountsChanged', async function (accounts: []) {
+          //setAccount(accounts[0])
+          await web3Handler()
+        })
+        
+        //loadContracts(signer)
+    }
 
     const connectTrust = async () =>{
 
@@ -203,6 +205,16 @@ const web3Handler = async () => {
     }
     return (
       <div className="App">
+        <div style={{display: shouldshow ? `flex`: `none`}} className="mymodal">
+          <div>
+            <span className="cancel" onClick={()=>setShouldShow(false)}>X</span>
+              <button onClick={web3Handler}>Metamask</button><br/><br/>
+              <WalletMultiButton >
+                <button >Sollet</button>
+              </WalletMultiButton><br/> 
+              <button >Trust</button>
+          </div>
+        </div>
           <div className="navbar">
             <div className="navbar-inner ">
               <a id="title" className="brand" href="#">Multi-Wallet</a>
@@ -211,12 +223,7 @@ const web3Handler = async () => {
 
               </ul>
               <ul className="nav pull-right">
-                <li><button className="btn" onClick={web3Handler}>Metamask</button></li>
-                <li className="divider-vertical"></li>
-                <li><WalletMultiButton >
-                    <button >Get Wallet</button></WalletMultiButton>
-                </li>
-
+                <li><button className="btn" onClick={()=>setShouldShow(true)}>Select Wallet</button></li>
               </ul>
             </div>
           </div>
