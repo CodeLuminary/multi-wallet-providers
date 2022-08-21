@@ -207,30 +207,28 @@ const web3Handler = async () => {
         (window as any).binanceChain.request({method: 'bsc_accounts'})
     }
     return (
-       
-
-        <div className="App">
-                <div className="navbar">
-        <div className="navbar-inner ">
-          <a id="title" className="brand" href="#">Multi-Wallet</a>
-          <ul className="nav">
+      <div className="App">
+          <div className="navbar">
+            <div className="navbar-inner ">
+              <a id="title" className="brand" href="#">Multi-Wallet</a>
+              <ul className="nav">
 
 
-          </ul>
-          <ul className="nav pull-right">
-                      <li><button className="btn" onClick={web3Handler}>Metamask</button></li>
-                      <li className="divider-vertical"></li>
-                      <li><WalletMultiButton >
-                          <button >Get Wallet</button></WalletMultiButton>
-                      </li>
+              </ul>
+              <ul className="nav pull-right">
+                <li><button className="btn" onClick={web3Handler}>Metamask</button></li>
+                <li className="divider-vertical"></li>
+                <li><WalletMultiButton >
+                    <button >Get Wallet</button></WalletMultiButton>
+                </li>
 
-                    </ul>
-        </div>
-      </div>
+              </ul>
+            </div>
+          </div>
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
-      <button className='btn' onClick={onClick}>Send Sol </button>
-      <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
-        </div>
+        <button className='btn' onClick={onClick}>Send Sol </button>
+        <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
+      </div>
     );
 };
