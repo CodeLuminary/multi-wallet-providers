@@ -84,7 +84,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
     let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
-    const [shouldshow, setShouldShow] = useState(true);
+    const [shouldshow, setShouldShow] = useState(false);
     
     //Initialize wallet number
     //1 for metamask, 2 for sollet, 3 for Trust
@@ -144,7 +144,7 @@ const Content: FC = () => {
 
         (window as any).ethereum.on('accountsChanged', async function (accounts: []) {
           //setAccount(accounts[0])
-          await web3Handler()
+          await connectMetamask()
         })
         
         //loadContracts(signer)
@@ -208,9 +208,12 @@ const Content: FC = () => {
         <div style={{display: shouldshow ? `flex`: `none`}} className="mymodal">
           <div>
             <span className="cancel" onClick={()=>setShouldShow(false)}>X</span>
-              <button onClick={web3Handler}>Metamask</button><br/><br/>
+              <button onClick={()=>{
+                setWalletNumber(1);
+                connectMetamask();
+              }}>Metamask</button><br/><br/>
               <WalletMultiButton >
-                <button >Sollet</button>
+                <button onClick={()=>setWalletNumber(2)}>Sollet</button>
               </WalletMultiButton><br/> 
               <button >Trust</button>
           </div>
@@ -230,7 +233,6 @@ const Content: FC = () => {
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
         <button className='btn' onClick={onClick}>Send Sol </button>
-        <button className="btn" onClick={connectTrust}>Connect to Metamask</button>
       </div>
     );
 };
