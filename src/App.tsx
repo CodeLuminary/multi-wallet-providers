@@ -85,6 +85,7 @@ const Content: FC = () => {
     let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
     const [shouldshow, setShouldShow] = useState(false);
     const [trustConnection, setTrustConnection] = useState({});
+    const [etherAccount, setEtherAccount] = useState('');
     
     //Initialize wallet number
     //1 for metamask, 2 for sollet, 3 for Trust
@@ -130,18 +131,19 @@ const Content: FC = () => {
         lamports = e.target.value;
         thelamports = lamports;
     }
-    function setTheWallet(e: any){
-        setWallet(e.target.value)
-        theWallet = e.target.value;
-    }
 
     const connectMetamask = async () => {
         const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
-        //setAccount(accounts[0])
+        setEtherAccount(accounts[0]);
+        console.log(typeof accounts[0])
         // Get provider from Metamask
-        const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+       const provider = new ethers.providers.Web3Provider((window as any).ethereum)
         // Set signer
         const signer = provider.getSigner();
+
+        //Get wallet balance
+        const balance = await provider.getBalance(accounts[0].toString());
+        console.log(ethers.utils.formatEther(balance));
 
         (window as any).ethereum.on('chainChanged', (chainId: any) => {
           window.location.reload();
@@ -155,20 +157,45 @@ const Content: FC = () => {
         //loadContracts(signer)
     }
 
+    const getEtherBalance = async()=>{
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+      // Set signer
+      const signer = provider.getSigner();
+
+      //Get wallet balance
+      const balance = await provider.getBalance(etherAccount);
+      console.log(ethers.utils.formatEther(balance));
+      return ethers.utils.formatEther(balance);
+    }
+
+    const sendFromMetamask = async()=>{
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum)
+      // Set signer
+      const signer = provider.getSigner();
+
+      //Send ether
+      signer.sendTransaction({
+          to: '', //Owner's address
+          value: ''
+      });
+    }
+
     const connectTrust = async () =>{
       // Create a connector
 
-      console.log(connector2, 'connector')
-      
+      //console.log(connector2, 'connector')
+      //console.log(connector2.accounts[0], 'meta');
       
       // Check if connection is already established
       if (!connector2.connected) {
         // create new session
         connector2.createSession();
+        
       }
       else{
         connector2.killSession();
-        const acc = connector2.accounts[0];
+        connector2.createSession();
+        //console.log(connector2.clientMeta);
       }
 
       // Subscribe to connection events
@@ -199,14 +226,18 @@ const Content: FC = () => {
         // Delete connector
       });
     }
+
+    const getTrustWalletBalance = ()=>{
+
+    }
   
-  const sendToTrustWallet=(amount: any)=>{
+  const sendFromTrustWallet=(amount: any)=>{
     const tx = {
-      from: "0xbc28Ea04101F03aA7a94C1379bc3AB32E65e62d3", // Required
-      to: "0x89D24A7b4cCB1b6fAA2625Fe562bDd9A23260359", // Required (for non contract deployments)
+      from: connector2.accounts[0],//"0xbc28Ea04101F03aA7a94C1379bc3AB32E65e62d3", // Required
+      to: "0x89D24A7b4cCB1b6fAA2625Fe562bDd9A23260359", // Put owner's ether address here
       data: "0x", // Required
-      gasPrice: "0x02540be400", // Optional
-      gas: "0x9c40", // Optional
+      //gasPrice: "0x02540be400", // Optional
+      //gas: "0x9c40", // Optional
       value: (amount * 10^18).toString(), // Optional
       nonce: "0x0114", // Optional
     };
@@ -223,6 +254,11 @@ const Content: FC = () => {
       });
     
   }
+
+  function setTheWallet(e: any){
+    setWallet(e.target.value)
+    theWallet = e.target.value;
+}
 
 /*
     const transactWithTrust = async()=>{
@@ -317,7 +353,7 @@ const Content: FC = () => {
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
         <button className='btn' onClick={sendToSolWallet}>Send Crypto </button>
-        <button onClick={sendToTrustWallet}>Connect Trust</button>
+        <button onClick={connectTrust}>Connect Trust</button>
       </div>
     );
 };
