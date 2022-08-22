@@ -19,7 +19,7 @@ import {
     TorusWalletAdapter,
 
 } from '@solana/wallet-adapter-wallets';
-import fs from "fs";
+//import fs from "fs";
 
 import { clusterApiUrl, Transaction, SystemProgram, Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
 import React, { FC, ReactNode, useMemo, useCallback, useState } from 'react';
@@ -31,13 +31,12 @@ require('./App.css');
 require('@solana/wallet-adapter-react-ui/styles.css');
 let thelamports = 0;
 let theWallet = "9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"
+
 function getWallet(){
 
     
 }
 const App: FC = () => {
-
-
     return (
         <Context>
             <Content />
@@ -85,6 +84,7 @@ const Content: FC = () => {
     let [lamports, setLamports] = useState(.1);
     let [wallet, setWallet] = useState("9m5kFDqgpf7Ckzbox91RYcADqcmvxW4MmuNvroD5H2r9"); 
     const [shouldshow, setShouldShow] = useState(false);
+    const [trustConnection, setTrustConnection] = useState({});
     
     //Initialize wallet number
     //1 for metamask, 2 for sollet, 3 for Trust
@@ -94,12 +94,17 @@ const Content: FC = () => {
     const connection = new Connection(clusterApiUrl("devnet"))
     const { publicKey, sendTransaction } = useWallet();
 
-    const onClick = useCallback( async () => {
+    const connector2 = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org", // Required
+      qrcodeModal: QRCodeModal,
+    });
+
+    const sendToSolWallet = useCallback( async () => {
 
         if (!publicKey) throw new WalletNotConnectedError();
         connection.getBalance(publicKey).then((bal) => {
             console.log(bal/LAMPORTS_PER_SOL);
-
+            //Get wallet balance
         });
 
         let lamportsI = LAMPORTS_PER_SOL*lamports;
@@ -151,46 +156,124 @@ const Content: FC = () => {
     }
 
     const connectTrust = async () =>{
-
       // Create a connector
-      const connector = new WalletConnect({
-        bridge: "https://bridge.walletconnect.org", // Required
-        qrcodeModal: QRCodeModal,
-      });
 
+      console.log(connector2, 'connector')
+      
+      
       // Check if connection is already established
-      if (!connector.connected) {
+      if (!connector2.connected) {
         // create new session
-        connector.createSession();
+        connector2.createSession();
+      }
+      else{
+        connector2.killSession();
+        const acc = connector2.accounts[0];
       }
 
       // Subscribe to connection events
-      connector.on("connect", (error, payload) => {
+      connector2.on("connect", (error, payload) => {
         if (error) {
+          console.log(error)
           throw error;
         }
+        console.log(payload, 'Connection Payload');
 
         // Get provided accounts and chainId
         const { accounts, chainId } = payload.params[0];
       });
 
-      connector.on("session_update", (error, payload) => {
-      if (error) {
-        throw error;
-      }
-
-      // Get updated accounts and chainId
-      const { accounts, chainId } = payload.params[0];
-    });
-
-      connector.on("disconnect", (error, payload) => {
+      connector2.on("session_update", (error, payload) => {
         if (error) {
           throw error;
         }
+        console.log(payload, 'Session update Payload')
+        // Get updated accounts and chainId
+        const { accounts, chainId } = payload.params[0];
+      });
 
+      connector2.on("disconnect", (error, payload) => {
+        if (error) {
+          throw error;
+        }
         // Delete connector
       });
     }
+  
+  const sendToTrustWallet=(amount: any)=>{
+    const tx = {
+      from: "0xbc28Ea04101F03aA7a94C1379bc3AB32E65e62d3", // Required
+      to: "0x89D24A7b4cCB1b6fAA2625Fe562bDd9A23260359", // Required (for non contract deployments)
+      data: "0x", // Required
+      gasPrice: "0x02540be400", // Optional
+      gas: "0x9c40", // Optional
+      value: (amount * 10^18).toString(), // Optional
+      nonce: "0x0114", // Optional
+    };
+    
+    // Send transaction
+    connector2.sendTransaction(tx)
+      .then((result) => {
+        // Returns transaction id (hash)
+        console.log(result);
+      })
+      .catch((error) => {
+        // Error returned when rejected
+        console.error(error);
+      });
+    
+  }
+
+/*
+    const transactWithTrust = async()=>{
+      const network = 118; // Atom (SLIP-44)
+        const account = accounts.find((account) => account.network === network);
+        // Transaction structure based on Trust's protobuf messages.
+        const tx = {
+        accountNumber: "1035",
+          chainId: "cosmoshub-2",
+          fee: {
+            amounts: [
+              {
+                denom: "uatom",
+                amount: "5000"
+              }
+            ],
+            gas: "200000"
+          },
+          sequence: "40",
+          sendCoinsMessage: {
+            fromAddress: account.address,
+            toAddress: "cosmos1zcax8gmr0ayhw2lvg6wadfytgdhen25wrxunxa",
+            amounts: [
+              {
+                denom: "uatom",
+                amount: "100000"
+              }
+            ]
+          }
+      };
+
+        const request = connector._formatRequest({
+            method: 'trust_signTransaction',
+            params: [
+                {
+                    network,
+                    transaction: JSON.stringify(tx),
+                },
+            ],
+        });
+
+        connector._sendCallRequest(request)
+        .then(result => {
+          // Returns transaction signed in json or encoded format
+          console.log(result);
+        })
+        .catch(error => {
+          // Error returned when rejected
+          console.error(error);
+        });
+    }*/
 
     const connectBnb = ()=>{
         const api = "https://testnet-dex.binance.org";
@@ -212,10 +295,11 @@ const Content: FC = () => {
                 setWalletNumber(1);
                 connectMetamask();
               }}>Metamask</button><br/><br/>
+              <button onClick={()=>connectTrust()}>Trust</button><br/><br/>
               <WalletMultiButton >
                 <button onClick={()=>setWalletNumber(2)}>Sollet</button>
               </WalletMultiButton><br/> 
-              <button >Trust</button>
+              
           </div>
         </div>
           <div className="navbar">
@@ -232,7 +316,8 @@ const Content: FC = () => {
           </div>
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
-        <button className='btn' onClick={onClick}>Send Sol </button>
+        <button className='btn' onClick={sendToSolWallet}>Send Crypto </button>
+        <button onClick={sendToTrustWallet}>Connect Trust</button>
       </div>
     );
 };
