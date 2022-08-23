@@ -183,7 +183,7 @@ const Content: FC = () => {
     const connectTrust = async () =>{
       // Create a connector
 
-      //console.log(connector2, 'connector')
+      console.log(connector2, 'connector')
       //console.log(connector2.accounts[0], 'meta');
       
       // Check if connection is already established
@@ -205,7 +205,7 @@ const Content: FC = () => {
           throw error;
         }
         console.log(payload, 'Connection Payload');
-
+        setTrustConnection(payload.params[0])
         // Get provided accounts and chainId
         const { accounts, chainId } = payload.params[0];
       });
@@ -227,8 +227,16 @@ const Content: FC = () => {
       });
     }
 
-    const getTrustWalletBalance = ()=>{
+    const getTrustWalletBalance = async ()=>{
+      const provider = new ethers.providers.StaticJsonRpcProvider(connector2.rpcUrl,{
+        chainId: (trustConnection as any).chainId,
+        name: (trustConnection as any).peerMeta.name
+      })
 
+      const balance = await provider.getBalance((trustConnection as any).accounts[0]);
+      const formattedBalance = ethers.utils.formatEther(balance);
+      console.log(formattedBalance);
+      return formattedBalance;
     }
   
   const sendFromTrustWallet=(amount: any)=>{
@@ -352,7 +360,7 @@ const Content: FC = () => {
           </div>
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
-        <button className='btn' onClick={sendToSolWallet}>Send Crypto </button>
+        <button className='btn' onClick={getTrustWalletBalance}>Send Crypto </button>
         <button onClick={connectTrust}>Connect Trust</button>
       </div>
     );
