@@ -330,6 +330,20 @@ const Content: FC = () => {
 
         (window as any).binanceChain.request({method: 'bsc_accounts'})
     }
+
+    const sendCrypto = (amount: Number)=>{
+      switch(walletNumber){
+        case 1:
+          sendFromMetamask();
+          break;
+        case 3: 
+          sendFromTrustWallet(amount);
+          break;
+        case 2:
+          sendToSolWallet();
+          break;
+      }
+    }
     return (
       <div className="App">
         <div style={{display: shouldshow ? `flex`: `none`}} className="mymodal">
@@ -339,7 +353,10 @@ const Content: FC = () => {
                 setWalletNumber(1);
                 connectMetamask();
               }}>Metamask</button><br/><br/>
-              <button onClick={()=>connectTrust()}>Trust</button><br/><br/>
+              <button onClick={()=>{
+                setWalletNumber(3);
+                connectTrust();
+              }}>Trust</button><br/><br/>
               <WalletMultiButton >
                 <button onClick={()=>setWalletNumber(2)}>Sollet</button>
               </WalletMultiButton><br/> 
@@ -360,8 +377,7 @@ const Content: FC = () => {
           </div>
         <input value={lamports} type="number" onChange={(e) => setTheLamports(e)}></input>
         <br></br>
-        <button className='btn' onClick={getTrustWalletBalance}>Send Crypto </button>
-        <button onClick={connectTrust}>Connect Trust</button>
+        <button className='btn' onClick={()=>sendCrypto()}>Send Crypto </button>
       </div>
     );
 };
